@@ -26,62 +26,61 @@ public class Solution {
         int[] weight = new int[size];
         int[] parent = new int[size];
         for (int i = 0; i < size; i++) {
-            weight[i] = 999999;
+            weight[i] = 51;
             parent[i] = -2;
         }
         int[] discovered = new int[size];
-        int startNode = -1;
+        int[] explored = new int[size];
 
-        for (int i = 0; i < size; i++) {
-            if (this.adj_matrix.get(i).get(i) == -1) {
-                startNode = i;
-                break;
-            }
-        }
-
-        int currentNode = startNode;
-        parent[currentNode] = -1;
+        int currentNode = 0;
+        weight[0] = 0;
         discovered[currentNode] = 1;
+        explored[currentNode] = 1;
+        parent[currentNode] = -1;
 
         ArrayList<Integer> adjNodes = this.adj_matrix.get(currentNode);
         PriorityQueue<Integer> unexplored = new PriorityQueue<>(Comparator.comparingInt(node -> weight[node]));
 
-        for (int i = 0; i < size; i++) {
-            int cost = adjNodes.get(i);
+        for (int node = 1; node < size; node++) {
+            int cost = adjNodes.get(node);
             if (cost != -1) {
-                weight[i] = cost;
-                unexplored.add(i);
-                parent[i] = currentNode;
-                discovered[i] = 1;
+                discovered[node] = 1;
+                parent[node] = currentNode;
+                weight[node] = cost;
+                unexplored.add(node);
             }
         }
 
         while (!unexplored.isEmpty()) {
+            // Pick the node with the given smallest weighted edge
             currentNode = unexplored.poll();
+            explored[currentNode] = 1;
             adjNodes = this.adj_matrix.get(currentNode);
 
-            for (int i = 0; i < size; i++) {
-
-                if (i == startNode) {
-                    continue;
-                }
-
-                int cost = adjNodes.get(i);
-
-                if (discovered[i] == 0) {
+            for (int node = 1; node < size; node++) {
+                // Check if the node is explored
+                if (explored[node] != 1) {
+                    int cost = adjNodes.get(node);
+                    // Check if the node is reachable
                     if (cost != -1) {
-                        weight[i] = cost;
-                        parent[i] = currentNode;
-                        unexplored.add(i);
-                        discovered[i] = 1;
-                    }
-                } else {
-                    if (cost == -1) {
-                        continue;
-                    }
-                    if (cost < weight[i]) {
-                        weight[i] = cost;
-                        parent[i] = currentNode;
+                        // if the node is undiscovered
+                        if (discovered[node] == 0) {
+                            discovered[node] = 1;
+                            parent[node] = currentNode;
+                            weight[node] = cost;
+                            unexplored.add(node);
+                        }
+                        // if the node is discovered
+                        else {
+                            // Modify if the weight of the current edge is less than the previous one
+                            // Make sure the weight of each edge is the smallest between the given ready-to-explore node set
+                            if (cost < weight[node]) {
+                                unexplored.remove(node);
+                                parent[node] = currentNode;
+                                weight[node] = cost;
+                                unexplored.add(node);
+                            }
+                        }
                     }
                 }
             }
